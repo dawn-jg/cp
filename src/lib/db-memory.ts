@@ -35,7 +35,7 @@ function getDB(): LocalDB {
     globalThis.__localDB = {
       users: [
         {
-          id: 'admin-001',
+          id: '1',
           email: 'admin@eval.com',
           username: 'admin',
           role: 'admin',
@@ -43,16 +43,16 @@ function getDB(): LocalDB {
           password_hash: 'admin123',
           created_at: new Date().toISOString(),
         },
-        { id: 'user-001', email: 'user01@test.com', username: 'user01', role: 'user', group_id: 'g-frontend', password_hash: '123456', created_at: new Date().toISOString() },
-        { id: 'user-002', email: 'user02@test.com', username: 'user02', role: 'user', group_id: 'g-frontend', password_hash: '123456', created_at: new Date().toISOString() },
-        { id: 'user-003', email: 'user03@test.com', username: 'user03', role: 'user', group_id: 'g-frontend', password_hash: '123456', created_at: new Date().toISOString() },
-        { id: 'user-004', email: 'user04@test.com', username: 'user04', role: 'user', group_id: 'g-frontend', password_hash: '123456', created_at: new Date().toISOString() },
-        { id: 'user-005', email: 'user05@test.com', username: 'user05', role: 'user', group_id: 'g-backend', password_hash: '123456', created_at: new Date().toISOString() },
-        { id: 'user-006', email: 'user06@test.com', username: 'user06', role: 'user', group_id: 'g-backend', password_hash: '123456', created_at: new Date().toISOString() },
-        { id: 'user-007', email: 'user07@test.com', username: 'user07', role: 'user', group_id: 'g-backend', password_hash: '123456', created_at: new Date().toISOString() },
-        { id: 'user-008', email: 'user08@test.com', username: 'user08', role: 'user', group_id: 'g-backend', password_hash: '123456', created_at: new Date().toISOString() },
-        { id: 'user-009', email: 'user09@test.com', username: 'user09', role: 'user', group_id: null, password_hash: '123456', created_at: new Date().toISOString() },
-        { id: 'user-010', email: 'user10@test.com', username: 'user10', role: 'user', group_id: null, password_hash: '123456', created_at: new Date().toISOString() },
+        { id: '2', email: 'user01@test.com', username: 'user01', role: 'user', group_id: 'g-frontend', password_hash: '123456', created_at: new Date().toISOString() },
+        { id: '3', email: 'user02@test.com', username: 'user02', role: 'user', group_id: 'g-frontend', password_hash: '123456', created_at: new Date().toISOString() },
+        { id: '4', email: 'user03@test.com', username: 'user03', role: 'user', group_id: 'g-frontend', password_hash: '123456', created_at: new Date().toISOString() },
+        { id: '5', email: 'user04@test.com', username: 'user04', role: 'user', group_id: 'g-frontend', password_hash: '123456', created_at: new Date().toISOString() },
+        { id: '6', email: 'user05@test.com', username: 'user05', role: 'user', group_id: 'g-backend', password_hash: '123456', created_at: new Date().toISOString() },
+        { id: '7', email: 'user06@test.com', username: 'user06', role: 'user', group_id: 'g-backend', password_hash: '123456', created_at: new Date().toISOString() },
+        { id: '8', email: 'user07@test.com', username: 'user07', role: 'user', group_id: 'g-backend', password_hash: '123456', created_at: new Date().toISOString() },
+        { id: '9', email: 'user08@test.com', username: 'user08', role: 'user', group_id: 'g-backend', password_hash: '123456', created_at: new Date().toISOString() },
+        { id: '10', email: 'user09@test.com', username: 'user09', role: 'user', group_id: null, password_hash: '123456', created_at: new Date().toISOString() },
+        { id: '11', email: 'user10@test.com', username: 'user10', role: 'user', group_id: null, password_hash: '123456', created_at: new Date().toISOString() },
       ],
       questions: [
         {
@@ -152,8 +152,10 @@ function getDB(): LocalDB {
   return globalThis.__localDB;
 }
 
+let _nextUserId = 12; // 从 seed 之后开始计数
+
 function generateId(): string {
-  return crypto.randomUUID?.() ?? Math.random().toString(36).slice(2);
+  return (_nextUserId++).toString();
 }
 
 // ===== 系统设置 =====

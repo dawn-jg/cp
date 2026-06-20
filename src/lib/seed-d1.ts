@@ -24,22 +24,22 @@ INSERT OR IGNORE INTO groups_t (id, name, description, created_at) VALUES
   ('g-frontend', '前端组', '前端方向技能评测', '${now}'),
   ('g-backend', '后端组', '后端方向技能评测', '${now}');
 
--- Admin user (password: admin123)
+-- Admin user (password: admin123)  ID: 1
 INSERT OR IGNORE INTO users (id, email, username, role, password_hash, created_at) VALUES
-  ('admin-001', 'admin@eval.com', 'admin', 'admin', 'admin123', '${now}');
+  (1, 'admin@eval.com', 'admin', 'admin', 'admin123', '${now}');
 
--- Test users (password: 123456)
+-- Test users (password: 123456)  IDs: 2~11
 INSERT OR IGNORE INTO users (id, email, username, role, group_id, password_hash, created_at) VALUES
-  ('user-001', 'user01@test.com', 'user01', 'user', 'g-frontend', '123456', '${now}'),
-  ('user-002', 'user02@test.com', 'user02', 'user', 'g-frontend', '123456', '${now}'),
-  ('user-003', 'user03@test.com', 'user03', 'user', 'g-frontend', '123456', '${now}'),
-  ('user-004', 'user04@test.com', 'user04', 'user', 'g-frontend', '123456', '${now}'),
-  ('user-005', 'user05@test.com', 'user05', 'user', 'g-backend', '123456', '${now}'),
-  ('user-006', 'user06@test.com', 'user06', 'user', 'g-backend', '123456', '${now}'),
-  ('user-007', 'user07@test.com', 'user07', 'user', 'g-backend', '123456', '${now}'),
-  ('user-008', 'user08@test.com', 'user08', 'user', 'g-backend', '123456', '${now}'),
-  ('user-009', 'user09@test.com', 'user09', 'user', NULL, '123456', '${now}'),
-  ('user-010', 'user10@test.com', 'user10', 'user', NULL, '123456', '${now}');
+  (2, 'user01@test.com', 'user01', 'user', 'g-frontend', '123456', '${now}'),
+  (3, 'user02@test.com', 'user02', 'user', 'g-frontend', '123456', '${now}'),
+  (4, 'user03@test.com', 'user03', 'user', 'g-frontend', '123456', '${now}'),
+  (5, 'user04@test.com', 'user04', 'user', 'g-frontend', '123456', '${now}'),
+  (6, 'user05@test.com', 'user05', 'user', 'g-backend', '123456', '${now}'),
+  (7, 'user06@test.com', 'user06', 'user', 'g-backend', '123456', '${now}'),
+  (8, 'user07@test.com', 'user07', 'user', 'g-backend', '123456', '${now}'),
+  (9, 'user08@test.com', 'user08', 'user', 'g-backend', '123456', '${now}'),
+  (10, 'user09@test.com', 'user09', 'user', NULL, '123456', '${now}'),
+  (11, 'user10@test.com', 'user10', 'user', NULL, '123456', '${now}');
 
 -- Questions
 INSERT OR IGNORE INTO questions (id, title, type, options, correct_answer, score, category, group_ids, created_at) VALUES

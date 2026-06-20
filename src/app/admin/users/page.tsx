@@ -59,7 +59,7 @@ export default function AdminUsersPage() {
     }
   };
 
-  const selectableUsers = useMemo(() => users.filter((u) => u.id !== 'admin-001'), [users]);
+  const selectableUsers = useMemo(() => users.filter((u) => u.id !== '1'), [users]);
   const allSelected = selectableUsers.length > 0 && selectableUsers.every((u) => selectedIds.has(u.id));
   const someSelected = selectableUsers.some((u) => selectedIds.has(u.id));
 
@@ -379,7 +379,7 @@ export default function AdminUsersPage() {
               </thead>
               <tbody>
                 {users.map((u) => {
-                  const isAdmin = u.id === 'admin-001';
+                  const isAdmin = u.id === '1';
                   const checked = selectedIds.has(u.id);
                   return (
                     <tr key={u.id} className={checked ? 'bg-blue-50/50' : ''}>
@@ -387,7 +387,7 @@ export default function AdminUsersPage() {
                         <input type="checkbox" checked={checked} onChange={() => toggleOne(u.id)}
                           className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
                       )}</td>
-                      <td className="text-xs text-gray-400 font-mono">{u.id.replace(/^.*-/, '')}</td>
+                      <td className="text-xs text-gray-400 font-mono">{u.id}</td>
                       <td className="font-medium">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-medium">{u.username[0]}</div>

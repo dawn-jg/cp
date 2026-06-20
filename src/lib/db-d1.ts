@@ -86,6 +86,9 @@ function stringifyJson(val: unknown): string {
   return JSON.stringify(val);
 }
 
+// ===== 用户ID 自动递增计数器（用于内存/非D1环境） =====
+let _userIdCounter = 12; // 从 schema seed 之后开始计数
+
 // ===== 系统设置 =====
 export async function getRegistrationEnabled(): Promise<boolean> {
   const db = getD1();
@@ -120,16 +123,17 @@ export async function createUser(
     .first();
   if (existing) return null;
 
-  const id = generateId();
   const now = new Date().toISOString();
   const finalRole = role || 'user';
 
-  await db
+  const result = await db
     .prepare(
-      'INSERT INTO users (id, email, username, role, group_id, password_hash, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO users (email, username, role, group_id, password_hash, created_at) VALUES (?, ?, ?, ?, ?, ?)',
     )
-    .bind(id, email, username, finalRole, groupId || null, password, now)
+    .bind(email, username, finalRole, groupId || null, password, now)
     .run();
+
+  const id = (result.meta?.last_row_id ?? _userIdCounter++).toString();
 
   return {
     id,
@@ -166,14 +170,13 @@ export async function createUsersBatch(
       continue;
     }
 
-    const id = generateId();
     const finalRole = role || 'user';
 
-    await db
+    const insertResult = await db
       .prepare(
-        'INSERT INTO users (id, email, username, role, group_id, password_hash, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO users (email, username, role, group_id, password_hash, created_at) VALUES (?, ?, ?, ?, ?, ?)',
       )
-      .bind(id, email, username, finalRole, groupId || null, password, now)
+      .bind(email, username, finalRole, groupId || null, password, now)
       .run();
 
     created++;

@@ -3,7 +3,7 @@
 
 -- Users
 CREATE TABLE IF NOT EXISTS users (
-  id TEXT PRIMARY KEY,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
   email TEXT UNIQUE NOT NULL,
   username TEXT UNIQUE NOT NULL,
   role TEXT NOT NULL DEFAULT 'user' CHECK(role IN ('user', 'admin')),
@@ -100,20 +100,20 @@ INSERT OR IGNORE INTO groups_t (id, name, description) VALUES
 
 -- Admin user (password: admin123)
 INSERT OR IGNORE INTO users (id, email, username, role, password_hash) VALUES
-  ('admin-001', 'admin@eval.com', 'admin', 'admin', 'admin123');
+  (1, 'admin@eval.com', 'admin', 'admin', 'admin123');
 
 -- Test users (password: 123456)
 INSERT OR IGNORE INTO users (id, email, username, role, group_id, password_hash) VALUES
-  ('user-001', 'user01@test.com', 'user01', 'user', 'g-frontend', '123456'),
-  ('user-002', 'user02@test.com', 'user02', 'user', 'g-frontend', '123456'),
-  ('user-003', 'user03@test.com', 'user03', 'user', 'g-frontend', '123456'),
-  ('user-004', 'user04@test.com', 'user04', 'user', 'g-frontend', '123456'),
-  ('user-005', 'user05@test.com', 'user05', 'user', 'g-backend', '123456'),
-  ('user-006', 'user06@test.com', 'user06', 'user', 'g-backend', '123456'),
-  ('user-007', 'user07@test.com', 'user07', 'user', 'g-backend', '123456'),
-  ('user-008', 'user08@test.com', 'user08', 'user', 'g-backend', '123456'),
-  ('user-009', 'user09@test.com', 'user09', 'user', NULL, '123456'),
-  ('user-010', 'user10@test.com', 'user10', 'user', NULL, '123456');
+  (2, 'user01@test.com', 'user01', 'user', 'g-frontend', '123456'),
+  (3, 'user02@test.com', 'user02', 'user', 'g-frontend', '123456'),
+  (4, 'user03@test.com', 'user03', 'user', 'g-frontend', '123456'),
+  (5, 'user04@test.com', 'user04', 'user', 'g-frontend', '123456'),
+  (6, 'user05@test.com', 'user05', 'user', 'g-backend', '123456'),
+  (7, 'user06@test.com', 'user06', 'user', 'g-backend', '123456'),
+  (8, 'user07@test.com', 'user07', 'user', 'g-backend', '123456'),
+  (9, 'user08@test.com', 'user08', 'user', 'g-backend', '123456'),
+  (10, 'user09@test.com', 'user09', 'user', NULL, '123456'),
+  (11, 'user10@test.com', 'user10', 'user', NULL, '123456');
 
 -- Questions
 INSERT OR IGNORE INTO questions (id, title, type, options, correct_answer, score, category, group_ids) VALUES
