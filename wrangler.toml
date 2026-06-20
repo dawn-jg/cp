@@ -1,0 +1,10 @@
+name = "cp-eval"
+pages_build_output_dir = ".vercel/output/static"
+compatibility_date = "2026-06-20"
+compatibility_flags = ["nodejs_compat"]
+
+# ===== D1 Database =====
+[[d1_databases]]
+binding = "DB"
+database_name = "cp-db"
+database_id = "0a290c4a-cfa3-46ca-bc66-88bfc241e91f"
