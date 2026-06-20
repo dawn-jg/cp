@@ -4,30 +4,34 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "npx opennextjs-cloudflare build",
+    "deploy": "npx wrangler deploy",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "preview": "npx wrangler dev"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.6.0",
+    "@supabase/supabase-js": "^2.49.0",
+    "bcryptjs": "^2.4.3",
+    "jose": "^5.9.0",
     "next": "^16.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@supabase/supabase-js": "^2.49.0",
-    "@supabase/ssr": "^0.6.0",
     "recharts": "^2.15.0",
-    "bcryptjs": "^2.4.3",
-    "jose": "^5.9.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.19.10",
+    "wrangler": "^4.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@types/bcryptjs": "^2.4.6",
-    "typescript": "^5.7.0",
-    "@tailwindcss/postcss": "^4.0.0",
-    "tailwindcss": "^4.0.0",
     "eslint": "^9.0.0",
-    "eslint-config-next": "^16.0.0"
+    "eslint-config-next": "^16.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.0"
   }
 }

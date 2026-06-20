@@ -16,8 +16,9 @@ import type {
 // ===== D1 绑定获取 =====
 // 优先级:
 //   1. globalThis.__D1_BINDING__?.DB (标准 Cloudflare 环境)
-//   2. 尝试从 @opennextjs/cloudflare 环境获取
-//   3. 通过 process.env 中的绑定名获取 (wrangler 注入)
+//   2. globalThis.DB (Pages Functions 环境)
+//   3. @opennextjs/cloudflare 的 getCloudflareContext (OpenNext Workers)
+//   4. process.env (本地开发和测试)
 interface D1Database {
   prepare(sql: string): D1PreparedStatement;
   dump(): Promise<ArrayBuffer>;
@@ -51,9 +52,17 @@ function getD1(): D1Database {
     | undefined;
   if (binding?.DB) return binding.DB;
 
-  // 优先级 2: wrangler 直接注入的 binding（Pages Functions 环境）
+  // 优先级 2: wrangler 直接注入的 binding（Pages Functions / Worker 环境）
   const db = (globalThis as Record<string, unknown>).DB as D1Database | undefined;
   if (db) return db;
+
+  // 优先级 3: @opennextjs/cloudflare Workers 环境
+  // 在 OpenNext Workers 中，env 绑定不在 globalThis 的直接属性上，
+  // 需要通过 getCloudflareContext() 获取。
+  const cfCtx = (globalThis as Record<string, unknown>)[
+    Symbol.for('__cloudflare-context__')
+  ] as { env: Record<string, unknown> } | undefined;
+  if (cfCtx?.env?.DB) return cfCtx.env.DB as D1Database;
 
   throw new Error(
     'D1 database binding not found. Ensure wrangler.toml has [[d1_databases]] binding = "DB"',
