@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+export const runtime = 'edge';
+
 const PUBLIC_ROUTES = ['/', '/login', '/register', '/admin-login', '/api/auth'];
 const ADMIN_ROUTES = ['/admin', '/api/admin'];
 
