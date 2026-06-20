@@ -40,9 +40,7 @@ export default function LoginPage() {
           <Link href="/" className="text-3xl">📊</Link>
           <h1 className="text-2xl font-bold mt-4">登录评测系统</h1>
           <p className="text-gray-500 mt-2">欢迎回来，继续您的技能评测之旅</p>
-          <div className="mt-3 inline-block bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 text-xs text-blue-700">
-            🔑 管理员：admin@eval.com / admin123
-          </div>
+
         </div>
         <div className="card">
           <form onSubmit={handleSubmit} className="space-y-5">
