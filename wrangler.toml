@@ -1,4 +1,4 @@
-name = "cp-eval"
+name = "cp"
 pages_build_output_dir = ".vercel/output/static"
 compatibility_date = "2026-06-20"
 compatibility_flags = ["nodejs_compat"]
