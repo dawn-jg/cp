@@ -119,6 +119,32 @@ export default function AdminUsersPage() {
     finally { setBusy(false); }
   };
 
+  // 密码重置弹窗
+  const [passwordModal, setPasswordModal] = useState<{ id: string; username: string } | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordBusy, setPasswordBusy] = useState(false);
+  const [passwordMsg, setPasswordMsg] = useState('');
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passwordModal || !newPassword.trim()) return;
+    setPasswordBusy(true);
+    setPasswordMsg('');
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: passwordModal.id, password: newPassword }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setPasswordMsg('密码已重置成功');
+        setTimeout(() => { setPasswordModal(null); setNewPassword(''); setPasswordMsg(''); }, 1500);
+      } else setPasswordMsg(data.error || '重置失败');
+    } catch { setPasswordMsg('网络错误'); }
+    finally { setPasswordBusy(false); }
+  };
+
   // 批量更改组别
   const handleBatchGroupChange = async (groupId: string) => {
     if (selectedCount === 0) return;
@@ -381,6 +407,7 @@ export default function AdminUsersPage() {
                       <td>
                         <div className="flex gap-2">
                           {!isAdmin && (<>
+                            <button onClick={() => setPasswordModal({ id: u.id, username: u.username })} className="btn btn-outline btn-sm">🔑 重置密码</button>
                             <button onClick={() => handleRoleToggle(u.id, u.role)} className="btn btn-outline btn-sm">{u.role === 'admin' ? '降级' : '升为管理'}</button>
                             <button onClick={() => handleDelete(u.id)} className="btn btn-danger btn-sm">删除</button>
                           </>)}
@@ -435,6 +462,37 @@ export default function AdminUsersPage() {
                 <button type="submit" className="btn btn-primary w-full" disabled={busy}>
                   {busy ? '创建中...' : '创建用户'}
                 </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ===== 密码重置弹窗 ===== */}
+        {passwordModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => { setPasswordModal(null); setNewPassword(''); setPasswordMsg(''); }}>
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 p-6 animate-fade-in" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-lg font-bold">🔑 重置密码</h2>
+                <button onClick={() => { setPasswordModal(null); setNewPassword(''); setPasswordMsg(''); }} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+              </div>
+              <p className="text-sm text-gray-500 mb-4">
+                为用户 <strong>{passwordModal.username}</strong> 设置新密码
+              </p>
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">新密码 *</label>
+                  <input type="text" className="input" placeholder="输入新密码" value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)} required autoFocus />
+                </div>
+                {passwordMsg && (
+                  <div className={`text-sm px-3 py-2 rounded-lg ${passwordMsg.includes('成功') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{passwordMsg}</div>
+                )}
+                <div className="flex gap-2 justify-end">
+                  <button type="button" onClick={() => { setPasswordModal(null); setNewPassword(''); setPasswordMsg(''); }} className="btn btn-outline btn-sm">取消</button>
+                  <button type="submit" className="btn btn-primary btn-sm" disabled={passwordBusy || !newPassword.trim()}>
+                    {passwordBusy ? '重置中...' : '确认重置'}
+                  </button>
+                </div>
               </form>
             </div>
           </div>

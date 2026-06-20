@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
-import { getAllUsers, deleteUser, deleteUsers, updateUserRole, updateUserGroup, updateUsersGroup, createUser, createUsersBatch } from '@/lib/db';
+import { getAllUsers, deleteUser, deleteUsers, updateUserRole, updateUserGroup, updateUsersGroup, updateUserPassword, createUser, createUsersBatch } from '@/lib/db';
 
 async function checkAdmin(req: NextRequest) {
   const token = req.cookies.get('token')?.value;
@@ -41,7 +41,9 @@ export async function DELETE(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const admin = await checkAdmin(req);
   if (!admin) return NextResponse.json({ success: false, error: '无权限' }, { status: 403 });
-  const { id, ids, role, group_id } = await req.json();
+  const body = await req.json();
+  const { id, ids, role, group_id, password } = body;
+
   // 批量更新组别
   if (ids && Array.isArray(ids) && group_id !== undefined) {
     const newGroup = group_id === '__none__' ? null : group_id;
@@ -51,6 +53,14 @@ export async function PATCH(req: NextRequest) {
   // 单个组别更新
   if (group_id !== undefined) {
     const ok = await updateUserGroup(id, group_id);
+    return NextResponse.json({ success: ok, error: ok ? undefined : '用户不存在' });
+  }
+  // 密码重置
+  if (password) {
+    if (id === 'admin-001') {
+      return NextResponse.json({ success: false, error: '不能修改超级管理员密码' }, { status: 400 });
+    }
+    const ok = await updateUserPassword(id, password);
     return NextResponse.json({ success: ok, error: ok ? undefined : '用户不存在' });
   }
   // 角色更新

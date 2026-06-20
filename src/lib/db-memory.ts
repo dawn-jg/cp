@@ -288,6 +288,14 @@ export async function updateUserGroup(id: string, groupId: string | null): Promi
   return true;
 }
 
+export async function updateUserPassword(id: string, newPassword: string): Promise<boolean> {
+  const db = getDB();
+  const user = db.users.find((u) => u.id === id);
+  if (!user) return false;
+  user.password_hash = newPassword;
+  return true;
+}
+
 // ===== 组别操作 =====
 export async function getAllGroups(): Promise<Group[]> {
   return getDB().groups;

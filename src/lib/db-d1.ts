@@ -313,6 +313,15 @@ export async function updateUserGroup(id: string, groupId: string | null): Promi
   return (result.meta?.changes ?? 0) > 0;
 }
 
+export async function updateUserPassword(id: string, newPassword: string): Promise<boolean> {
+  const db = getD1();
+  const result = await db
+    .prepare('UPDATE users SET password_hash = ? WHERE id = ?')
+    .bind(newPassword, id)
+    .run();
+  return (result.meta?.changes ?? 0) > 0;
+}
+
 // ===== 组别操作 =====
 export async function getAllGroups(): Promise<Group[]> {
   const db = getD1();

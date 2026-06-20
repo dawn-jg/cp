@@ -29,6 +29,7 @@ export const deleteUsers: typeof impl.deleteUsers = impl.deleteUsers;
 export const updateUsersGroup: typeof impl.updateUsersGroup = impl.updateUsersGroup;
 export const updateUserRole: typeof impl.updateUserRole = impl.updateUserRole;
 export const updateUserGroup: typeof impl.updateUserGroup = impl.updateUserGroup;
+export const updateUserPassword: typeof impl.updateUserPassword = impl.updateUserPassword;
 
 // ===== 组别操作 =====
 export const getAllGroups: typeof impl.getAllGroups = impl.getAllGroups;
