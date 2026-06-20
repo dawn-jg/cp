@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "npx opennextjs-cloudflare build",
+    "build": "next build",
+    "cf-build": "npx opennextjs-cloudflare build",
     "deploy": "npx wrangler deploy",
     "start": "next start",
     "lint": "eslint .",
