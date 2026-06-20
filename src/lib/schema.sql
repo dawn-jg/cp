@@ -1,6 +1,16 @@
 -- ===== D1 Schema for Evaluation Platform =====
 -- Run: wrangler d1 execute cp-db --file=src/lib/schema.sql
 
+-- Drop existing tables (idempotent reset)
+DROP TABLE IF EXISTS rating_records;
+DROP TABLE IF EXISTS rating_questions;
+DROP TABLE IF EXISTS rating_targets;
+DROP TABLE IF EXISTS evaluations;
+DROP TABLE IF EXISTS questions;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS groups_t;
+DROP TABLE IF EXISTS settings;
+
 -- Users
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
