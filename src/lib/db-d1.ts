@@ -59,7 +59,7 @@ function getD1(): D1Database {
   // 优先级 3: @opennextjs/cloudflare Workers 环境
   // 在 OpenNext Workers 中，env 绑定不在 globalThis 的直接属性上，
   // 需要通过 getCloudflareContext() 获取。
-  const cfCtx = (globalThis as Record<string, unknown>)[
+  const cfCtx = (globalThis as Record<string | symbol, unknown>)[
     Symbol.for('__cloudflare-context__')
   ] as { env: Record<string, unknown> } | undefined;
   if (cfCtx?.env?.DB) return cfCtx.env.DB as D1Database;
