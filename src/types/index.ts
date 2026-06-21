@@ -15,6 +15,12 @@ export interface User {
   created_at: string;
 }
 
+export interface QuestionSet {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
 export interface Question {
   id: string;
   title: string;
@@ -24,6 +30,7 @@ export interface Question {
   score: number;
   category: string;
   group_ids: string[];
+  set_id?: string;
   created_at: string;
 }
 
@@ -69,11 +76,18 @@ export interface AdminLoginRequest {
 }
 
 // ===== 人物评分系统 =====
+export interface RatingGroup {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
 export interface RatingTarget {
   id: string;
   name: string;
   description: string;
   group_ids: string[];
+  group_id?: string;
   created_at: string;
 }
 

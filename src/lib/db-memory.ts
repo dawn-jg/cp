@@ -4,10 +4,12 @@
 import type {
   User,
   Question,
+  QuestionSet,
   Evaluation,
   EvaluationSummary,
   Group,
   RatingTarget,
+  RatingGroup,
   RatingQuestion,
   RatingRecord,
   RatingStats,
@@ -17,9 +19,11 @@ import type {
 interface LocalDB {
   users: (User & { password_hash: string })[];
   questions: Question[];
+  questionSets: QuestionSet[];
   evaluations: Evaluation[];
   groups: Group[];
   ratingTargets: RatingTarget[];
+  ratingGroups: RatingGroup[];
   ratingQuestions: RatingQuestion[];
   ratingRecords: RatingRecord[];
   adminTokens: Set<string>;
@@ -54,6 +58,8 @@ function getDB(): LocalDB {
         { id: '10', email: 'user09@test.com', username: 'user09', role: 'user', group_id: null, password_hash: '123456', created_at: new Date().toISOString() },
         { id: '11', email: 'user10@test.com', username: 'user10', role: 'user', group_id: null, password_hash: '123456', created_at: new Date().toISOString() },
       ],
+      questionSets: [],
+      ratingGroups: [],
       questions: [
         {
           id: 'q1',
@@ -336,9 +342,71 @@ export async function getGroupById(id: string): Promise<Group | null> {
   return getDB().groups.find((g) => g.id === id) ?? null;
 }
 
+// ===== 题目套操作 =====
+export async function getAllQuestionSets(): Promise<QuestionSet[]> {
+  return getDB().questionSets;
+}
+
+export async function createQuestionSet(name: string): Promise<QuestionSet> {
+  const db = getDB();
+  const set: QuestionSet = { id: generateId(), name, created_at: new Date().toISOString() };
+  db.questionSets.push(set);
+  return set;
+}
+
+export async function updateQuestionSet(id: string, name: string): Promise<boolean> {
+  const db = getDB();
+  const s = db.questionSets.find((s) => s.id === id);
+  if (!s) return false;
+  s.name = name;
+  return true;
+}
+
+export async function deleteQuestionSet(id: string): Promise<boolean> {
+  const db = getDB();
+  const idx = db.questionSets.findIndex((s) => s.id === id);
+  if (idx === -1) return false;
+  db.questionSets.splice(idx, 1);
+  db.questions.forEach((q) => { if (q.set_id === id) q.set_id = undefined; });
+  return true;
+}
+
+// ===== 评分组操作 =====
+export async function getAllRatingGroups(): Promise<RatingGroup[]> {
+  return getDB().ratingGroups;
+}
+
+export async function createRatingGroup(name: string): Promise<RatingGroup> {
+  const db = getDB();
+  const g: RatingGroup = { id: generateId(), name, created_at: new Date().toISOString() };
+  db.ratingGroups.push(g);
+  return g;
+}
+
+export async function updateRatingGroup(id: string, name: string): Promise<boolean> {
+  const db = getDB();
+  const g = db.ratingGroups.find((g) => g.id === id);
+  if (!g) return false;
+  g.name = name;
+  return true;
+}
+
+export async function deleteRatingGroup(id: string): Promise<boolean> {
+  const db = getDB();
+  const idx = db.ratingGroups.findIndex((g) => g.id === id);
+  if (idx === -1) return false;
+  db.ratingGroups.splice(idx, 1);
+  db.ratingTargets.forEach((t) => { if (t.group_id === id) t.group_id = undefined; });
+  return true;
+}
+
 // ===== 题库操作 =====
-export async function getAllQuestions(): Promise<Question[]> {
-  return getDB().questions;
+export async function getAllQuestions(setId?: string): Promise<Question[]> {
+  const db = getDB();
+  if (setId !== undefined) {
+    return db.questions.filter((q) => q.set_id === setId);
+  }
+  return db.questions;
 }
 
 export async function getQuestionsForGroup(groupId: string | null): Promise<Question[]> {
@@ -361,6 +429,7 @@ export async function createQuestion(
   const newQ: Question = {
     ...question,
     group_ids: question.group_ids || [],
+    set_id: question.set_id || undefined,
     id: generateId(),
     created_at: new Date().toISOString(),
   };
@@ -517,8 +586,12 @@ export async function getEvaluationSummary(): Promise<EvaluationSummary> {
 
 // ===== 人物评分系统 =====
 
-export async function getAllRatingTargets(): Promise<RatingTarget[]> {
-  return getDB().ratingTargets;
+export async function getAllRatingTargets(groupId?: string): Promise<RatingTarget[]> {
+  const db = getDB();
+  if (groupId !== undefined) {
+    return db.ratingTargets.filter((t) => t.group_id === groupId);
+  }
+  return db.ratingTargets;
 }
 
 export async function getRatingTargetById(id: string): Promise<RatingTarget | null> {
@@ -539,6 +612,7 @@ export async function createRatingTarget(data: Omit<RatingTarget, 'id' | 'create
   const target: RatingTarget = {
     ...data,
     group_ids: data.group_ids || [],
+    group_id: data.group_id || undefined,
     id: generateId(),
     created_at: new Date().toISOString(),
   };
@@ -551,6 +625,10 @@ export async function updateRatingTarget(id: string, data: Partial<Omit<RatingTa
   const t = db.ratingTargets.find((t) => t.id === id);
   if (!t) return false;
   Object.assign(t, data);
+  if (data.group_id === undefined) {
+    // allow setting to undefined
+    delete t.group_id;
+  }
   return true;
 }
 

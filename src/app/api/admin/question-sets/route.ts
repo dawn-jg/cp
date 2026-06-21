@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
-import { getAllQuestions, createQuestion, updateQuestion, deleteQuestion } from '@/lib/db';
+import { getAllQuestionSets, createQuestionSet, updateQuestionSet, deleteQuestionSet } from '@/lib/db';
 
 async function checkAdmin(req: NextRequest) {
   const token = req.cookies.get('token')?.value;
@@ -13,32 +13,32 @@ async function checkAdmin(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const admin = await checkAdmin(req);
   if (!admin) return NextResponse.json({ success: false, error: '无权限' }, { status: 403 });
-  const { searchParams } = new URL(req.url);
-  const setId = searchParams.get('set_id');
-  const questions = await getAllQuestions(setId ?? undefined);
-  return NextResponse.json({ success: true, data: questions });
+  const sets = await getAllQuestionSets();
+  return NextResponse.json({ success: true, data: sets });
 }
 
 export async function POST(req: NextRequest) {
   const admin = await checkAdmin(req);
   if (!admin) return NextResponse.json({ success: false, error: '无权限' }, { status: 403 });
-  const body = await req.json();
-  const question = await createQuestion(body);
-  return NextResponse.json({ success: true, data: question });
+  const { name } = await req.json();
+  if (!name) return NextResponse.json({ success: false, error: '名称不能为空' }, { status: 400 });
+  const set = await createQuestionSet(name);
+  return NextResponse.json({ success: true, data: set });
 }
 
 export async function PUT(req: NextRequest) {
   const admin = await checkAdmin(req);
   if (!admin) return NextResponse.json({ success: false, error: '无权限' }, { status: 403 });
-  const { id, ...data } = await req.json();
-  const ok = await updateQuestion(id, data);
-  return NextResponse.json({ success: ok, error: ok ? undefined : '题目不存在' });
+  const { id, name } = await req.json();
+  if (!id || !name) return NextResponse.json({ success: false, error: '参数不完整' }, { status: 400 });
+  const ok = await updateQuestionSet(id, name);
+  return NextResponse.json({ success: ok, error: ok ? undefined : '题目套不存在' });
 }
 
 export async function DELETE(req: NextRequest) {
   const admin = await checkAdmin(req);
   if (!admin) return NextResponse.json({ success: false, error: '无权限' }, { status: 403 });
   const { id } = await req.json();
-  const ok = await deleteQuestion(id);
-  return NextResponse.json({ success: ok, error: ok ? undefined : '题目不存在' });
+  const ok = await deleteQuestionSet(id);
+  return NextResponse.json({ success: ok, error: ok ? undefined : '题目套不存在' });
 }

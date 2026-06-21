@@ -47,6 +47,18 @@ export const updateGroup: typeof impl.updateGroup = impl.updateGroup;
 export const deleteGroup: typeof impl.deleteGroup = impl.deleteGroup;
 export const getGroupById: typeof impl.getGroupById = impl.getGroupById;
 
+// ===== 题目套操作 =====
+export const getAllQuestionSets: typeof impl.getAllQuestionSets = impl.getAllQuestionSets;
+export const createQuestionSet: typeof impl.createQuestionSet = impl.createQuestionSet;
+export const updateQuestionSet: typeof impl.updateQuestionSet = impl.updateQuestionSet;
+export const deleteQuestionSet: typeof impl.deleteQuestionSet = impl.deleteQuestionSet;
+
+// ===== 评分组操作 =====
+export const getAllRatingGroups: typeof impl.getAllRatingGroups = impl.getAllRatingGroups;
+export const createRatingGroup: typeof impl.createRatingGroup = impl.createRatingGroup;
+export const updateRatingGroup: typeof impl.updateRatingGroup = impl.updateRatingGroup;
+export const deleteRatingGroup: typeof impl.deleteRatingGroup = impl.deleteRatingGroup;
+
 // ===== 题库操作 =====
 export const getAllQuestions: typeof impl.getAllQuestions = impl.getAllQuestions;
 export const getQuestionsForGroup: typeof impl.getQuestionsForGroup = impl.getQuestionsForGroup;

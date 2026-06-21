@@ -4,10 +4,12 @@
 import type {
   User,
   Question,
+  QuestionSet,
   Evaluation,
   EvaluationSummary,
   Group,
   RatingTarget,
+  RatingGroup,
   RatingQuestion,
   RatingRecord,
   RatingStats,
@@ -402,24 +404,108 @@ export async function getGroupById(id: string): Promise<Group | null> {
   };
 }
 
-// ===== 题库操作 =====
-export async function getAllQuestions(): Promise<Question[]> {
+// ===== 题目套操作 =====
+export async function getAllQuestionSets(): Promise<QuestionSet[]> {
   const db = getD1();
   const result = await db
-    .prepare(
-      'SELECT id, title, type, options, correct_answer, score, category, group_ids, created_at FROM questions ORDER BY created_at ASC',
-    )
-    .all<{
-      id: string;
-      title: string;
-      type: 'single' | 'multiple' | 'text';
-      options: string;
-      correct_answer: string;
-      score: number;
-      category: string;
-      group_ids: string;
-      created_at: string;
-    }>();
+    .prepare('SELECT id, name, created_at FROM question_sets ORDER BY created_at ASC')
+    .all<{ id: string; name: string; created_at: string }>();
+  return (result.results ?? []).map((row) => ({
+    id: row.id,
+    name: row.name,
+    created_at: row.created_at,
+  }));
+}
+
+export async function createQuestionSet(name: string): Promise<QuestionSet> {
+  const db = getD1();
+  const id = generateId();
+  const now = new Date().toISOString();
+  await db
+    .prepare('INSERT INTO question_sets (id, name, created_at) VALUES (?, ?, ?)')
+    .bind(id, name, now)
+    .run();
+  return { id, name, created_at: now };
+}
+
+export async function updateQuestionSet(id: string, name: string): Promise<boolean> {
+  const db = getD1();
+  const result = await db
+    .prepare('UPDATE question_sets SET name = ? WHERE id = ?')
+    .bind(name, id)
+    .run();
+  return (result.meta?.changes ?? 0) > 0;
+}
+
+export async function deleteQuestionSet(id: string): Promise<boolean> {
+  const db = getD1();
+  await db.prepare('UPDATE questions SET set_id = NULL WHERE set_id = ?').bind(id).run();
+  const result = await db.prepare('DELETE FROM question_sets WHERE id = ?').bind(id).run();
+  return (result.meta?.changes ?? 0) > 0;
+}
+
+// ===== 评分组操作 =====
+export async function getAllRatingGroups(): Promise<RatingGroup[]> {
+  const db = getD1();
+  const result = await db
+    .prepare('SELECT id, name, created_at FROM rating_groups ORDER BY created_at ASC')
+    .all<{ id: string; name: string; created_at: string }>();
+  return (result.results ?? []).map((row) => ({
+    id: row.id,
+    name: row.name,
+    created_at: row.created_at,
+  }));
+}
+
+export async function createRatingGroup(name: string): Promise<RatingGroup> {
+  const db = getD1();
+  const id = generateId();
+  const now = new Date().toISOString();
+  await db
+    .prepare('INSERT INTO rating_groups (id, name, created_at) VALUES (?, ?, ?)')
+    .bind(id, name, now)
+    .run();
+  return { id, name, created_at: now };
+}
+
+export async function updateRatingGroup(id: string, name: string): Promise<boolean> {
+  const db = getD1();
+  const result = await db
+    .prepare('UPDATE rating_groups SET name = ? WHERE id = ?')
+    .bind(name, id)
+    .run();
+  return (result.meta?.changes ?? 0) > 0;
+}
+
+export async function deleteRatingGroup(id: string): Promise<boolean> {
+  const db = getD1();
+  await db.prepare('UPDATE rating_targets SET group_id = NULL WHERE group_id = ?').bind(id).run();
+  const result = await db.prepare('DELETE FROM rating_groups WHERE id = ?').bind(id).run();
+  return (result.meta?.changes ?? 0) > 0;
+}
+
+// ===== 题库操作 =====
+export async function getAllQuestions(setId?: string): Promise<Question[]> {
+  const db = getD1();
+  let sql = 'SELECT id, title, type, options, correct_answer, score, category, group_ids, set_id, created_at FROM questions';
+  const params: unknown[] = [];
+  if (setId !== undefined) {
+    sql += ' WHERE set_id = ?';
+    params.push(setId);
+  }
+  sql += ' ORDER BY created_at ASC';
+  const result = await db.prepare(sql).bind(...params).all<{
+    id: string;
+    title: string;
+    type: 'single' | 'multiple' | 'text';
+    options: string;
+    correct_answer: string;
+    score: number;
+    category: string;
+    group_ids: string;
+    set_id: string | null;
+    created_at: string;
+  }>();
 
   return (result.results ?? []).map(rowToQuestion);
 }
@@ -428,7 +514,7 @@ export async function getQuestionsForGroup(groupId: string | null): Promise<Ques
   const db = getD1();
   const result = await db
     .prepare(
-      'SELECT id, title, type, options, correct_answer, score, category, group_ids, created_at FROM questions ORDER BY created_at ASC',
+      'SELECT id, title, type, options, correct_answer, score, category, group_ids, set_id, created_at FROM questions ORDER BY created_at ASC',
     )
     .all<{
       id: string;
@@ -439,6 +525,7 @@ export async function getQuestionsForGroup(groupId: string | null): Promise<Ques
       score: number;
       category: string;
       group_ids: string;
+      set_id: string | null;
       created_at: string;
     }>();
 
@@ -455,7 +542,7 @@ export async function getQuestionById(id: string): Promise<Question | null> {
   const db = getD1();
   const row = await db
     .prepare(
-      'SELECT id, title, type, options, correct_answer, score, category, group_ids, created_at FROM questions WHERE id = ?',
+      'SELECT id, title, type, options, correct_answer, score, category, group_ids, set_id, created_at FROM questions WHERE id = ?',
     )
     .bind(id)
     .first<{
@@ -467,6 +554,7 @@ export async function getQuestionById(id: string): Promise<Question | null> {
       score: number;
       category: string;
       group_ids: string;
+      set_id: string | null;
       created_at: string;
     }>();
 
@@ -483,7 +571,7 @@ export async function createQuestion(
 
   await db
     .prepare(
-      'INSERT INTO questions (id, title, type, options, correct_answer, score, category, group_ids, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO questions (id, title, type, options, correct_answer, score, category, group_ids, set_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     )
     .bind(
       id,
@@ -494,6 +582,7 @@ export async function createQuestion(
       question.score ?? 10,
       question.category ?? '',
       stringifyJson(question.group_ids || []),
+      question.set_id || null,
       now,
     )
     .run();
@@ -520,6 +609,7 @@ export async function updateQuestion(
   if (data.score !== undefined) { sets.push('score = ?'); values.push(data.score); }
   if (data.category !== undefined) { sets.push('category = ?'); values.push(data.category); }
   if (data.group_ids !== undefined) { sets.push('group_ids = ?'); values.push(stringifyJson(data.group_ids)); }
+  if (data.set_id !== undefined) { sets.push('set_id = ?'); values.push(data.set_id); }
 
   if (sets.length === 0) return false;
 
@@ -555,6 +645,7 @@ export async function submitEvaluation(
       score: number;
       category: string;
       group_ids: string;
+      set_id: string | null;
       created_at: string;
     }>();
 
@@ -727,24 +818,31 @@ export async function getEvaluationSummary(): Promise<EvaluationSummary> {
 
 // ===== 人物评分系统 =====
 
-// 评分对象 CRUD
-export async function getAllRatingTargets(): Promise<RatingTarget[]> {
+// ===== 评分对象操作（支持 group_id 过滤） =====
+export async function getAllRatingTargets(groupId?: string): Promise<RatingTarget[]> {
   const db = getD1();
-  const result = await db
-    .prepare('SELECT id, name, description, group_ids, created_at FROM rating_targets ORDER BY created_at ASC')
-    .all<{
-      id: string;
-      name: string;
-      description: string;
-      group_ids: string;
-      created_at: string;
-    }>();
+  let sql = 'SELECT id, name, description, group_ids, group_id, created_at FROM rating_targets';
+  const params: unknown[] = [];
+  if (groupId !== undefined) {
+    sql += ' WHERE group_id = ?';
+    params.push(groupId);
+  }
+  sql += ' ORDER BY created_at ASC';
+  const result = await db.prepare(sql).bind(...params).all<{
+    id: string;
+    name: string;
+    description: string;
+    group_ids: string;
+    group_id: string | null;
+    created_at: string;
+  }>();
 
   return (result.results ?? []).map((row) => ({
     id: row.id,
     name: row.name,
     description: row.description,
     group_ids: parseJsonField<string[]>(row.group_ids, []),
+    group_id: row.group_id || undefined,
     created_at: row.created_at,
   }));
 }
@@ -752,13 +850,14 @@ export async function getAllRatingTargets(): Promise<RatingTarget[]> {
 export async function getRatingTargetById(id: string): Promise<RatingTarget | null> {
   const db = getD1();
   const row = await db
-    .prepare('SELECT id, name, description, group_ids, created_at FROM rating_targets WHERE id = ?')
+    .prepare('SELECT id, name, description, group_ids, group_id, created_at FROM rating_targets WHERE id = ?')
     .bind(id)
     .first<{
       id: string;
       name: string;
       description: string;
       group_ids: string;
+      group_id: string | null;
       created_at: string;
     }>();
 
@@ -768,6 +867,7 @@ export async function getRatingTargetById(id: string): Promise<RatingTarget | nu
     name: row.name,
     description: row.description,
     group_ids: parseJsonField<string[]>(row.group_ids, []),
+    group_id: row.group_id || undefined,
     created_at: row.created_at,
   };
 }
@@ -790,14 +890,15 @@ export async function createRatingTarget(
 
   await db
     .prepare(
-      'INSERT INTO rating_targets (id, name, description, group_ids, created_at) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO rating_targets (id, name, description, group_ids, group_id, created_at) VALUES (?, ?, ?, ?, ?, ?)',
     )
-    .bind(id, data.name, data.description, stringifyJson(data.group_ids || []), now)
+    .bind(id, data.name, data.description, stringifyJson(data.group_ids || []), data.group_id || null, now)
     .run();
 
   return {
     ...data,
     group_ids: data.group_ids || [],
+    group_id: data.group_id || undefined,
     id,
     created_at: now,
   };
@@ -814,6 +915,7 @@ export async function updateRatingTarget(
   if (data.name !== undefined) { sets.push('name = ?'); values.push(data.name); }
   if (data.description !== undefined) { sets.push('description = ?'); values.push(data.description); }
   if (data.group_ids !== undefined) { sets.push('group_ids = ?'); values.push(stringifyJson(data.group_ids)); }
+  if (data.group_id !== undefined) { sets.push('group_id = ?'); values.push(data.group_id); }
 
   if (sets.length === 0) return false;
 
@@ -1057,6 +1159,7 @@ function rowToQuestion(row: {
   score: number;
   category: string;
   group_ids: string;
+  set_id: string | null;
   created_at: string;
 }): Question {
   return {
@@ -1068,6 +1171,7 @@ function rowToQuestion(row: {
     score: row.score,
     category: row.category,
     group_ids: parseJsonField<string[]>(row.group_ids, []),
+    set_id: row.set_id || undefined,
     created_at: row.created_at,
   };
 }

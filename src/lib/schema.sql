@@ -7,6 +7,8 @@ DROP TABLE IF EXISTS rating_questions;
 DROP TABLE IF EXISTS rating_targets;
 DROP TABLE IF EXISTS evaluations;
 DROP TABLE IF EXISTS questions;
+DROP TABLE IF EXISTS question_sets;
+DROP TABLE IF EXISTS rating_groups;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS groups_t;
 DROP TABLE IF EXISTS settings;
@@ -30,6 +32,20 @@ CREATE TABLE IF NOT EXISTS groups_t (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Question sets (题目套)
+CREATE TABLE IF NOT EXISTS question_sets (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Rating groups (评分组)
+CREATE TABLE IF NOT EXISTS rating_groups (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 -- Questions
 CREATE TABLE IF NOT EXISTS questions (
   id TEXT PRIMARY KEY,
@@ -40,6 +56,7 @@ CREATE TABLE IF NOT EXISTS questions (
   score INTEGER NOT NULL DEFAULT 10,
   category TEXT NOT NULL DEFAULT '',
   group_ids TEXT NOT NULL DEFAULT '[]',
+  set_id TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -61,6 +78,7 @@ CREATE TABLE IF NOT EXISTS rating_targets (
   name TEXT NOT NULL,
   description TEXT NOT NULL DEFAULT '',
   group_ids TEXT NOT NULL DEFAULT '[]',
+  group_id TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

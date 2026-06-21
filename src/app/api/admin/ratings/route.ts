@@ -13,7 +13,9 @@ async function checkAdmin(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const admin = await checkAdmin(req);
   if (!admin) return NextResponse.json({ success: false, error: '无权限' }, { status: 403 });
-  const targets = await getAllRatingTargets();
+  const { searchParams } = new URL(req.url);
+  const groupId = searchParams.get('group_id');
+  const targets = await getAllRatingTargets(groupId ?? undefined);
   return NextResponse.json({ success: true, data: targets });
 }
 
