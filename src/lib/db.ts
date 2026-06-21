@@ -2,13 +2,22 @@
 // Cloudflare Workers / Edge Runtime → D1 (SQLite via db-d1.ts)
 // Node.js (开发环境) → 内存数据库 (via db-memory.ts)
 
-// 环境检测：Cloudflare/Edge 时用 D1，否则用内存
+// 环境检测：Cloudflare Workers / Pages / Edge 时用 D1，否则用内存
 const useD1 =
-  typeof process !== 'undefined' &&
-  (process.env.CLOUDFLARE === '1' ||
-    process.env.NEXT_RUNTIME === 'edge' ||
-    process.env.CF_PAGES === '1' ||
-    process.env.CF_PAGES_BRANCH !== undefined);
+  // 优先级 1: OpenNext Workers binding (部署环境)
+  typeof (globalThis as Record<string, unknown>).__D1_BINDING__ !== 'undefined' ||
+  // 优先级 2: 标准 Cloudflare D1 binding (wrangler dev / Pages)
+  typeof (globalThis as Record<string, unknown>).DB !== 'undefined' ||
+  // 优先级 3: OpenNext cloudflare context (Workers 运行时)
+  typeof (globalThis as Record<string | symbol, unknown>)[
+    Symbol.for('__cloudflare-context__')
+  ] !== 'undefined' ||
+  // 优先级 4: 环境变量回退（旧版 Pages / 本地模拟）
+  (typeof process !== 'undefined' &&
+    (process.env.CLOUDFLARE === '1' ||
+      process.env.NEXT_RUNTIME === 'edge' ||
+      process.env.CF_PAGES === '1' ||
+      process.env.CF_PAGES_BRANCH !== undefined));
 
 const impl = useD1
   ? await import('./db-d1')
