@@ -18,6 +18,7 @@ export interface User {
 export interface QuestionSet {
   id: string;
   name: string;
+  group_ids: string[];  // 可访问的用户组
   created_at: string;
 }
 
@@ -79,6 +80,7 @@ export interface AdminLoginRequest {
 export interface RatingGroup {
   id: string;
   name: string;
+  group_ids: string[];  // 可访问的用户组
   created_at: string;
 }
 

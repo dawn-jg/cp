@@ -408,28 +408,36 @@ export async function getGroupById(id: string): Promise<Group | null> {
 export async function getAllQuestionSets(): Promise<QuestionSet[]> {
   const db = getD1();
   const result = await db
-    .prepare('SELECT id, name, created_at FROM question_sets ORDER BY created_at ASC')
-    .all<{ id: string; name: string; created_at: string }>();
+    .prepare('SELECT id, name, group_ids, created_at FROM question_sets ORDER BY created_at ASC')
+    .all<{ id: string; name: string; group_ids: string; created_at: string }>();
   return (result.results ?? []).map((row) => ({
     id: row.id,
     name: row.name,
+    group_ids: parseJsonField<string[]>(row.group_ids, []),
     created_at: row.created_at,
   }));
 }
 
-export async function createQuestionSet(name: string): Promise<QuestionSet> {
+export async function createQuestionSet(name: string, group_ids?: string[]): Promise<QuestionSet> {
   const db = getD1();
   const id = generateId();
   const now = new Date().toISOString();
   await db
-    .prepare('INSERT INTO question_sets (id, name, created_at) VALUES (?, ?, ?)')
-    .bind(id, name, now)
+    .prepare('INSERT INTO question_sets (id, name, group_ids, created_at) VALUES (?, ?, ?, ?)')
+    .bind(id, name, stringifyJson(group_ids || []), now)
     .run();
-  return { id, name, created_at: now };
+  return { id, name, group_ids: group_ids || [], created_at: now };
 }
 
-export async function updateQuestionSet(id: string, name: string): Promise<boolean> {
+export async function updateQuestionSet(id: string, name: string, group_ids?: string[]): Promise<boolean> {
   const db = getD1();
+  if (group_ids !== undefined) {
+    const result = await db
+      .prepare('UPDATE question_sets SET name = ?, group_ids = ? WHERE id = ?')
+      .bind(name, stringifyJson(group_ids), id)
+      .run();
+    return (result.meta?.changes ?? 0) > 0;
+  }
   const result = await db
     .prepare('UPDATE question_sets SET name = ? WHERE id = ?')
     .bind(name, id)
@@ -444,32 +452,49 @@ export async function deleteQuestionSet(id: string): Promise<boolean> {
   return (result.meta?.changes ?? 0) > 0;
 }
 
+export async function getQuestionSetsForGroup(groupId: string | null): Promise<QuestionSet[]> {
+  const all = await getAllQuestionSets();
+  return all.filter((s) => {
+    if (!s.group_ids || s.group_ids.length === 0) return true;
+    if (!groupId) return false;
+    return s.group_ids.includes(groupId);
+  });
+}
+
 // ===== 评分组操作 =====
 export async function getAllRatingGroups(): Promise<RatingGroup[]> {
   const db = getD1();
   const result = await db
-    .prepare('SELECT id, name, created_at FROM rating_groups ORDER BY created_at ASC')
-    .all<{ id: string; name: string; created_at: string }>();
+    .prepare('SELECT id, name, group_ids, created_at FROM rating_groups ORDER BY created_at ASC')
+    .all<{ id: string; name: string; group_ids: string; created_at: string }>();
   return (result.results ?? []).map((row) => ({
     id: row.id,
     name: row.name,
+    group_ids: parseJsonField<string[]>(row.group_ids, []),
     created_at: row.created_at,
   }));
 }
 
-export async function createRatingGroup(name: string): Promise<RatingGroup> {
+export async function createRatingGroup(name: string, group_ids?: string[]): Promise<RatingGroup> {
   const db = getD1();
   const id = generateId();
   const now = new Date().toISOString();
   await db
-    .prepare('INSERT INTO rating_groups (id, name, created_at) VALUES (?, ?, ?)')
-    .bind(id, name, now)
+    .prepare('INSERT INTO rating_groups (id, name, group_ids, created_at) VALUES (?, ?, ?, ?)')
+    .bind(id, name, stringifyJson(group_ids || []), now)
     .run();
-  return { id, name, created_at: now };
+  return { id, name, group_ids: group_ids || [], created_at: now };
 }
 
-export async function updateRatingGroup(id: string, name: string): Promise<boolean> {
+export async function updateRatingGroup(id: string, name: string, group_ids?: string[]): Promise<boolean> {
   const db = getD1();
+  if (group_ids !== undefined) {
+    const result = await db
+      .prepare('UPDATE rating_groups SET name = ?, group_ids = ? WHERE id = ?')
+      .bind(name, stringifyJson(group_ids), id)
+      .run();
+    return (result.meta?.changes ?? 0) > 0;
+  }
   const result = await db
     .prepare('UPDATE rating_groups SET name = ? WHERE id = ?')
     .bind(name, id)
@@ -482,6 +507,15 @@ export async function deleteRatingGroup(id: string): Promise<boolean> {
   await db.prepare('UPDATE rating_targets SET group_id = NULL WHERE group_id = ?').bind(id).run();
   const result = await db.prepare('DELETE FROM rating_groups WHERE id = ?').bind(id).run();
   return (result.meta?.changes ?? 0) > 0;
+}
+
+export async function getRatingGroupsForGroup(groupId: string | null): Promise<RatingGroup[]> {
+  const all = await getAllRatingGroups();
+  return all.filter((g) => {
+    if (!g.group_ids || g.group_ids.length === 0) return true;
+    if (!groupId) return false;
+    return g.group_ids.includes(groupId);
+  });
 }
 
 // ===== 题库操作 =====
@@ -529,9 +563,23 @@ export async function getQuestionsForGroup(groupId: string | null): Promise<Ques
       created_at: string;
     }>();
 
+  const allSets = await getAllQuestionSets();
+  const setMap = new Map(allSets.map((s) => [s.id, s]));
+
   return (result.results ?? [])
     .map(rowToQuestion)
     .filter((q) => {
+      // 如果题目有 set_id，优先检查所属 set 的 group_ids
+      if (q.set_id) {
+        const set = setMap.get(q.set_id);
+        if (set && set.group_ids && set.group_ids.length > 0) {
+          // set 限制了组别，检查用户是否在允许的组中
+          if (!groupId) return false;
+          return set.group_ids.includes(groupId);
+        }
+        // set 没有限制组别，fallback 到 question 自身的 group_ids
+      }
+      // 无 set_id 或 set 无限制，使用 question 自身的 group_ids
       if (!q.group_ids || q.group_ids.length === 0) return true;
       if (!groupId) return false;
       return q.group_ids.includes(groupId);
@@ -874,7 +922,21 @@ export async function getRatingTargetById(id: string): Promise<RatingTarget | nu
 
 export async function getRatingTargetsForGroup(groupId: string | null): Promise<RatingTarget[]> {
   const allTargets = await getAllRatingTargets();
+  const allGroups = await getAllRatingGroups();
+  const groupMap = new Map(allGroups.map((g) => [g.id, g]));
+
   return allTargets.filter((t) => {
+    // 如果 target 有 group_id，优先检查所属 rating_group 的 group_ids
+    if (t.group_id) {
+      const group = groupMap.get(t.group_id);
+      if (group && group.group_ids && group.group_ids.length > 0) {
+        // group 限制了组别，检查用户是否在允许的组中
+        if (!groupId) return false;
+        return group.group_ids.includes(groupId);
+      }
+      // group 没有限制组别，fallback 到 target 自身的 group_ids
+    }
+    // 无 group_id 或 group 无限制，使用 target 自身的 group_ids
     if (!t.group_ids || t.group_ids.length === 0) return true;
     if (!groupId) return false;
     return t.group_ids.includes(groupId);

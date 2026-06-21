@@ -20,18 +20,18 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const admin = await checkAdmin(req);
   if (!admin) return NextResponse.json({ success: false, error: '无权限' }, { status: 403 });
-  const { name } = await req.json();
+  const { name, group_ids } = await req.json();
   if (!name) return NextResponse.json({ success: false, error: '名称不能为空' }, { status: 400 });
-  const group = await createRatingGroup(name);
+  const group = await createRatingGroup(name, group_ids);
   return NextResponse.json({ success: true, data: group });
 }
 
 export async function PUT(req: NextRequest) {
   const admin = await checkAdmin(req);
   if (!admin) return NextResponse.json({ success: false, error: '无权限' }, { status: 403 });
-  const { id, name } = await req.json();
+  const { id, name, group_ids } = await req.json();
   if (!id || !name) return NextResponse.json({ success: false, error: '参数不完整' }, { status: 400 });
-  const ok = await updateRatingGroup(id, name);
+  const ok = await updateRatingGroup(id, name, group_ids);
   return NextResponse.json({ success: ok, error: ok ? undefined : '评分组不存在' });
 }
 

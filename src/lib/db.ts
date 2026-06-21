@@ -52,12 +52,14 @@ export const getAllQuestionSets: typeof impl.getAllQuestionSets = impl.getAllQue
 export const createQuestionSet: typeof impl.createQuestionSet = impl.createQuestionSet;
 export const updateQuestionSet: typeof impl.updateQuestionSet = impl.updateQuestionSet;
 export const deleteQuestionSet: typeof impl.deleteQuestionSet = impl.deleteQuestionSet;
+export const getQuestionSetsForGroup: typeof impl.getQuestionSetsForGroup = impl.getQuestionSetsForGroup;
 
 // ===== 评分组操作 =====
 export const getAllRatingGroups: typeof impl.getAllRatingGroups = impl.getAllRatingGroups;
 export const createRatingGroup: typeof impl.createRatingGroup = impl.createRatingGroup;
 export const updateRatingGroup: typeof impl.updateRatingGroup = impl.updateRatingGroup;
 export const deleteRatingGroup: typeof impl.deleteRatingGroup = impl.deleteRatingGroup;
+export const getRatingGroupsForGroup: typeof impl.getRatingGroupsForGroup = impl.getRatingGroupsForGroup;
 
 // ===== 题库操作 =====
 export const getAllQuestions: typeof impl.getAllQuestions = impl.getAllQuestions;

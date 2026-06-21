@@ -347,18 +347,19 @@ export async function getAllQuestionSets(): Promise<QuestionSet[]> {
   return getDB().questionSets;
 }
 
-export async function createQuestionSet(name: string): Promise<QuestionSet> {
+export async function createQuestionSet(name: string, group_ids?: string[]): Promise<QuestionSet> {
   const db = getDB();
-  const set: QuestionSet = { id: generateId(), name, created_at: new Date().toISOString() };
+  const set: QuestionSet = { id: generateId(), name, group_ids: group_ids || [], created_at: new Date().toISOString() };
   db.questionSets.push(set);
   return set;
 }
 
-export async function updateQuestionSet(id: string, name: string): Promise<boolean> {
+export async function updateQuestionSet(id: string, name: string, group_ids?: string[]): Promise<boolean> {
   const db = getDB();
   const s = db.questionSets.find((s) => s.id === id);
   if (!s) return false;
   s.name = name;
+  if (group_ids !== undefined) s.group_ids = group_ids;
   return true;
 }
 
@@ -371,23 +372,33 @@ export async function deleteQuestionSet(id: string): Promise<boolean> {
   return true;
 }
 
+export async function getQuestionSetsForGroup(groupId: string | null): Promise<QuestionSet[]> {
+  const db = getDB();
+  return db.questionSets.filter((s) => {
+    if (!s.group_ids || s.group_ids.length === 0) return true;
+    if (!groupId) return false;
+    return s.group_ids.includes(groupId);
+  });
+}
+
 // ===== 评分组操作 =====
 export async function getAllRatingGroups(): Promise<RatingGroup[]> {
   return getDB().ratingGroups;
 }
 
-export async function createRatingGroup(name: string): Promise<RatingGroup> {
+export async function createRatingGroup(name: string, group_ids?: string[]): Promise<RatingGroup> {
   const db = getDB();
-  const g: RatingGroup = { id: generateId(), name, created_at: new Date().toISOString() };
+  const g: RatingGroup = { id: generateId(), name, group_ids: group_ids || [], created_at: new Date().toISOString() };
   db.ratingGroups.push(g);
   return g;
 }
 
-export async function updateRatingGroup(id: string, name: string): Promise<boolean> {
+export async function updateRatingGroup(id: string, name: string, group_ids?: string[]): Promise<boolean> {
   const db = getDB();
   const g = db.ratingGroups.find((g) => g.id === id);
   if (!g) return false;
   g.name = name;
+  if (group_ids !== undefined) g.group_ids = group_ids;
   return true;
 }
 
@@ -398,6 +409,15 @@ export async function deleteRatingGroup(id: string): Promise<boolean> {
   db.ratingGroups.splice(idx, 1);
   db.ratingTargets.forEach((t) => { if (t.group_id === id) t.group_id = undefined; });
   return true;
+}
+
+export async function getRatingGroupsForGroup(groupId: string | null): Promise<RatingGroup[]> {
+  const db = getDB();
+  return db.ratingGroups.filter((g) => {
+    if (!g.group_ids || g.group_ids.length === 0) return true;
+    if (!groupId) return false;
+    return g.group_ids.includes(groupId);
+  });
 }
 
 // ===== 题库操作 =====
@@ -411,7 +431,20 @@ export async function getAllQuestions(setId?: string): Promise<Question[]> {
 
 export async function getQuestionsForGroup(groupId: string | null): Promise<Question[]> {
   const db = getDB();
+  const setMap = new Map(db.questionSets.map((s) => [s.id, s]));
+
   return db.questions.filter((q) => {
+    // 如果题目有 set_id，优先检查所属 set 的 group_ids
+    if (q.set_id) {
+      const set = setMap.get(q.set_id);
+      if (set && set.group_ids && set.group_ids.length > 0) {
+        // set 限制了组别，检查用户是否在允许的组中
+        if (!groupId) return false;
+        return set.group_ids.includes(groupId);
+      }
+      // set 没有限制组别，fallback 到 question 自身的 group_ids
+    }
+    // 无 set_id 或 set 无限制，使用 question 自身的 group_ids
     if (!q.group_ids || q.group_ids.length === 0) return true;
     if (!groupId) return false;
     return q.group_ids.includes(groupId);
@@ -600,7 +633,20 @@ export async function getRatingTargetById(id: string): Promise<RatingTarget | nu
 
 export async function getRatingTargetsForGroup(groupId: string | null): Promise<RatingTarget[]> {
   const db = getDB();
+  const groupMap = new Map(db.ratingGroups.map((g) => [g.id, g]));
+
   return db.ratingTargets.filter((t) => {
+    // 如果 target 有 group_id，优先检查所属 rating_group 的 group_ids
+    if (t.group_id) {
+      const group = groupMap.get(t.group_id);
+      if (group && group.group_ids && group.group_ids.length > 0) {
+        // group 限制了组别，检查用户是否在允许的组中
+        if (!groupId) return false;
+        return group.group_ids.includes(groupId);
+      }
+      // group 没有限制组别，fallback 到 target 自身的 group_ids
+    }
+    // 无 group_id 或 group 无限制，使用 target 自身的 group_ids
     if (!t.group_ids || t.group_ids.length === 0) return true;
     if (!groupId) return false;
     return t.group_ids.includes(groupId);

@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS groups_t (
 CREATE TABLE IF NOT EXISTS question_sets (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
+  group_ids TEXT NOT NULL DEFAULT '[]',
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -43,6 +44,7 @@ CREATE TABLE IF NOT EXISTS question_sets (
 CREATE TABLE IF NOT EXISTS rating_groups (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
+  group_ids TEXT NOT NULL DEFAULT '[]',
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

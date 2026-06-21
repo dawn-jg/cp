@@ -20,18 +20,18 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const admin = await checkAdmin(req);
   if (!admin) return NextResponse.json({ success: false, error: '无权限' }, { status: 403 });
-  const { name } = await req.json();
+  const { name, group_ids } = await req.json();
   if (!name) return NextResponse.json({ success: false, error: '名称不能为空' }, { status: 400 });
-  const set = await createQuestionSet(name);
+  const set = await createQuestionSet(name, group_ids);
   return NextResponse.json({ success: true, data: set });
 }
 
 export async function PUT(req: NextRequest) {
   const admin = await checkAdmin(req);
   if (!admin) return NextResponse.json({ success: false, error: '无权限' }, { status: 403 });
-  const { id, name } = await req.json();
+  const { id, name, group_ids } = await req.json();
   if (!id || !name) return NextResponse.json({ success: false, error: '参数不完整' }, { status: 400 });
-  const ok = await updateQuestionSet(id, name);
+  const ok = await updateQuestionSet(id, name, group_ids);
   return NextResponse.json({ success: ok, error: ok ? undefined : '题目套不存在' });
 }
 

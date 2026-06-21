@@ -20,6 +20,7 @@ export default function AdminQuestionsPage() {
   const [showSetForm, setShowSetForm] = useState(false);
   const [editingSet, setEditingSet] = useState<QuestionSet | null>(null);
   const [setFormName, setSetFormName] = useState('');
+  const [setFormGroupIds, setSetFormGroupIds] = useState<string[]>([]);
 
   // 题目表单
   const [showForm, setShowForm] = useState(false);
@@ -71,12 +72,14 @@ export default function AdminQuestionsPage() {
   const openAddSet = () => {
     setEditingSet(null);
     setSetFormName('');
+    setSetFormGroupIds([]);
     setShowSetForm(true);
   };
 
   const openEditSet = (s: QuestionSet) => {
     setEditingSet(s);
     setSetFormName(s.name);
+    setSetFormGroupIds(s.group_ids || []);
     setShowSetForm(true);
   };
 
@@ -84,7 +87,8 @@ export default function AdminQuestionsPage() {
     e.preventDefault();
     try {
       const method = editingSet ? 'PUT' : 'POST';
-      const body = editingSet ? { id: editingSet.id, name: setFormName } : { name: setFormName };
+      const body: Record<string, unknown> = editingSet ? { id: editingSet.id, name: setFormName } : { name: setFormName };
+      if (setFormGroupIds.length > 0) body.group_ids = setFormGroupIds;
       const res = await fetch('/api/admin/question-sets', {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -419,6 +423,23 @@ export default function AdminQuestionsPage() {
                 <input className="input" placeholder="如：前端基础测试" value={setFormName}
                   onChange={(e) => setSetFormName(e.target.value)} required />
               </div>
+              {groups.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">归属组别（不选则所有组可见）</label>
+                  <div className="flex flex-wrap gap-2">
+                    {groups.map((g) => {
+                      const checked = setFormGroupIds.includes(g.id);
+                      return (
+                        <label key={g.id} className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border cursor-pointer text-sm transition-all ${checked ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 hover:border-gray-300 text-gray-600'}`}>
+                          <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded" checked={checked}
+                            onChange={() => setSetFormGroupIds(checked ? setFormGroupIds.filter((id) => id !== g.id) : [...setFormGroupIds, g.id])} />
+                          {g.name}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               <div className="flex gap-3 pt-2">
                 <button type="submit" className="btn btn-primary">{editingSet ? '保存修改' : '创建'}</button>
                 <button type="button" onClick={() => setShowSetForm(false)} className="btn btn-outline">取消</button>

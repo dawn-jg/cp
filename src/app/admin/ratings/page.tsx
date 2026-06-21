@@ -20,6 +20,7 @@ export default function AdminRatingsPage() {
   const [showGroupForm, setShowGroupForm] = useState(false);
   const [editingGroup, setEditingGroup] = useState<RatingGroup | null>(null);
   const [groupFormName, setGroupFormName] = useState('');
+  const [groupFormGroupIds, setGroupFormGroupIds] = useState<string[]>([]);
 
   // 评分对象表单
   const [showTargetForm, setShowTargetForm] = useState(false);
@@ -78,12 +79,14 @@ export default function AdminRatingsPage() {
   const openAddGroup = () => {
     setEditingGroup(null);
     setGroupFormName('');
+    setGroupFormGroupIds([]);
     setShowGroupForm(true);
   };
 
   const openEditGroup = (g: RatingGroup) => {
     setEditingGroup(g);
     setGroupFormName(g.name);
+    setGroupFormGroupIds(g.group_ids || []);
     setShowGroupForm(true);
   };
 
@@ -91,7 +94,8 @@ export default function AdminRatingsPage() {
     e.preventDefault();
     try {
       const method = editingGroup ? 'PUT' : 'POST';
-      const body = editingGroup ? { id: editingGroup.id, name: groupFormName } : { name: groupFormName };
+      const body: Record<string, unknown> = editingGroup ? { id: editingGroup.id, name: groupFormName } : { name: groupFormName };
+      if (groupFormGroupIds.length > 0) body.group_ids = groupFormGroupIds;
       const res = await fetch('/api/admin/rating-groups', {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -485,6 +489,23 @@ export default function AdminRatingsPage() {
                 <input className="input" placeholder="如：前端团队互评" value={groupFormName}
                   onChange={(e) => setGroupFormName(e.target.value)} required />
               </div>
+              {groups.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">归属组别（不选则所有组可见）</label>
+                  <div className="flex flex-wrap gap-2">
+                    {groups.map((g) => {
+                      const checked = groupFormGroupIds.includes(g.id);
+                      return (
+                        <label key={g.id} className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border cursor-pointer text-sm transition-all ${checked ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 hover:border-gray-300 text-gray-600'}`}>
+                          <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded" checked={checked}
+                            onChange={() => setGroupFormGroupIds(checked ? groupFormGroupIds.filter((id) => id !== g.id) : [...groupFormGroupIds, g.id])} />
+                          {g.name}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               <div className="flex gap-3 pt-2">
                 <button type="submit" className="btn btn-primary">{editingGroup ? '保存修改' : '创建'}</button>
                 <button type="button" onClick={() => setShowGroupForm(false)} className="btn btn-outline">取消</button>
