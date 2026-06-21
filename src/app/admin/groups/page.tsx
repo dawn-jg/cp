@@ -173,7 +173,6 @@ export default function AdminGroupsPage() {
               <div key={g.id} className="card flex flex-col">
                 <div className="flex items-start justify-between mb-3">
                   <h3 className="font-semibold text-lg">{g.name}</h3>
-                  <span className="text-xs text-gray-400">{g.id}</span>
                 </div>
                 <p className="text-sm text-gray-500 flex-1 mb-4">
                   {g.description || '暂无描述'}
