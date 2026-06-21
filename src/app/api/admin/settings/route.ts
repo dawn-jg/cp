@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   if (!admin) return NextResponse.json({ success: false, error: '无权限' }, { status: 403 });
   return NextResponse.json({
     success: true,
-    data: { registrationEnabled: getRegistrationEnabled() },
+    data: { registrationEnabled: await getRegistrationEnabled() },
   });
 }
 
@@ -29,10 +29,10 @@ export async function POST(req: NextRequest) {
   if (typeof registrationEnabled !== 'boolean') {
     return NextResponse.json({ success: false, error: '参数错误' }, { status: 400 });
   }
-  setRegistrationEnabled(registrationEnabled);
+  await setRegistrationEnabled(registrationEnabled);
   return NextResponse.json({
     success: true,
-    data: { registrationEnabled: getRegistrationEnabled() },
+    data: { registrationEnabled: await getRegistrationEnabled() },
     message: registrationEnabled ? '注册功能已开启' : '注册功能已关闭',
   });
 }

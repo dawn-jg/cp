@@ -5,7 +5,7 @@ import { createToken } from '@/lib/auth';
 export async function POST(req: NextRequest) {
   try {
     // 检查注册开关
-    if (!getRegistrationEnabled()) {
+    if (!(await getRegistrationEnabled())) {
       return NextResponse.json({ success: false, error: '注册功能已关闭，请联系管理员' }, { status: 403 });
     }
 
