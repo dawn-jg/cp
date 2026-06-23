@@ -40,9 +40,7 @@ export default function AdminLoginPage() {
           <Link href="/" className="text-3xl">🛡️</Link>
           <h1 className="text-2xl font-bold mt-4">管理员登录</h1>
           <p className="text-gray-500 mt-2">使用管理员邮箱登录后台系统</p>
-          <div className="mt-3 inline-block bg-gray-100 border border-gray-200 rounded-lg px-4 py-2 text-xs text-gray-600">
-            🔑 admin@eval.com / admin123
-          </div>
+
         </div>
         <div className="card">
           <form onSubmit={handleSubmit} className="space-y-5">
