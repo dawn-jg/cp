@@ -128,22 +128,22 @@ INSERT OR IGNORE INTO groups_t (id, name, description) VALUES
   ('g-frontend', '前端组', '前端方向技能评测'),
   ('g-backend', '后端组', '后端方向技能评测');
 
--- Admin user (password: admin123)
+-- Admin user (password: admin123) - 已 bcrypt hash
 INSERT OR IGNORE INTO users (id, email, username, role, password_hash) VALUES
-  (1, 'admin@eval.com', 'admin', 'admin', 'admin123');
+  (1, 'admin@eval.com', 'admin', 'admin', '$2a$10$FELBju8.rKlM3QINuHZDjuYlJCSrhsJmgfk0wm3pYKkoiXkF4Md6W');
 
--- Test users (password: 123456)
+-- Test users (password: 123456) - 已 bcrypt hash
 INSERT OR IGNORE INTO users (id, email, username, role, group_id, password_hash) VALUES
-  (2, 'user01@test.com', 'user01', 'user', 'g-frontend', '123456'),
-  (3, 'user02@test.com', 'user02', 'user', 'g-frontend', '123456'),
-  (4, 'user03@test.com', 'user03', 'user', 'g-frontend', '123456'),
-  (5, 'user04@test.com', 'user04', 'user', 'g-frontend', '123456'),
-  (6, 'user05@test.com', 'user05', 'user', 'g-backend', '123456'),
-  (7, 'user06@test.com', 'user06', 'user', 'g-backend', '123456'),
-  (8, 'user07@test.com', 'user07', 'user', 'g-backend', '123456'),
-  (9, 'user08@test.com', 'user08', 'user', 'g-backend', '123456'),
-  (10, 'user09@test.com', 'user09', 'user', NULL, '123456'),
-  (11, 'user10@test.com', 'user10', 'user', NULL, '123456');
+  (2, 'user01@test.com', 'user01', 'user', 'g-frontend', '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e'),
+  (3, 'user02@test.com', 'user02', 'user', 'g-frontend', '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e'),
+  (4, 'user03@test.com', 'user03', 'user', 'g-frontend', '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e'),
+  (5, 'user04@test.com', 'user04', 'user', 'g-frontend', '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e'),
+  (6, 'user05@test.com', 'user05', 'user', 'g-backend', '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e'),
+  (7, 'user06@test.com', 'user06', 'user', 'g-backend', '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e'),
+  (8, 'user07@test.com', 'user07', 'user', 'g-backend', '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e'),
+  (9, 'user08@test.com', 'user08', 'user', 'g-backend', '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e'),
+  (10, 'user09@test.com', 'user09', 'user', NULL, '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e'),
+  (11, 'user10@test.com', 'user10', 'user', NULL, '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e');
 
 -- Questions
 INSERT OR IGNORE INTO questions (id, title, type, options, correct_answer, score, category, group_ids) VALUES

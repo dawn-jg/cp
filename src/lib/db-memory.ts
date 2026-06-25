@@ -1,6 +1,7 @@
 // 内存数据库适配器 — 本地开发测试用
 // 纯内存实现，与 db-d1.ts 函数签名完全一致
 
+import bcrypt from 'bcryptjs';
 import type {
   User,
   Question,
@@ -44,19 +45,19 @@ function getDB(): LocalDB {
           username: 'admin',
           role: 'admin',
           group_id: null,
-          password_hash: 'admin123',
+          password_hash: '$2a$10$FELBju8.rKlM3QINuHZDjuYlJCSrhsJmgfk0wm3pYKkoiXkF4Md6W',
           created_at: new Date().toISOString(),
         },
-        { id: '2', email: 'user01@test.com', username: 'user01', role: 'user', group_id: 'g-frontend', password_hash: '123456', created_at: new Date().toISOString() },
-        { id: '3', email: 'user02@test.com', username: 'user02', role: 'user', group_id: 'g-frontend', password_hash: '123456', created_at: new Date().toISOString() },
-        { id: '4', email: 'user03@test.com', username: 'user03', role: 'user', group_id: 'g-frontend', password_hash: '123456', created_at: new Date().toISOString() },
-        { id: '5', email: 'user04@test.com', username: 'user04', role: 'user', group_id: 'g-frontend', password_hash: '123456', created_at: new Date().toISOString() },
-        { id: '6', email: 'user05@test.com', username: 'user05', role: 'user', group_id: 'g-backend', password_hash: '123456', created_at: new Date().toISOString() },
-        { id: '7', email: 'user06@test.com', username: 'user06', role: 'user', group_id: 'g-backend', password_hash: '123456', created_at: new Date().toISOString() },
-        { id: '8', email: 'user07@test.com', username: 'user07', role: 'user', group_id: 'g-backend', password_hash: '123456', created_at: new Date().toISOString() },
-        { id: '9', email: 'user08@test.com', username: 'user08', role: 'user', group_id: 'g-backend', password_hash: '123456', created_at: new Date().toISOString() },
-        { id: '10', email: 'user09@test.com', username: 'user09', role: 'user', group_id: null, password_hash: '123456', created_at: new Date().toISOString() },
-        { id: '11', email: 'user10@test.com', username: 'user10', role: 'user', group_id: null, password_hash: '123456', created_at: new Date().toISOString() },
+        { id: '2', email: 'user01@test.com', username: 'user01', role: 'user', group_id: 'g-frontend', password_hash: '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', created_at: new Date().toISOString() },
+        { id: '3', email: 'user02@test.com', username: 'user02', role: 'user', group_id: 'g-frontend', password_hash: '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', created_at: new Date().toISOString() },
+        { id: '4', email: 'user03@test.com', username: 'user03', role: 'user', group_id: 'g-frontend', password_hash: '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', created_at: new Date().toISOString() },
+        { id: '5', email: 'user04@test.com', username: 'user04', role: 'user', group_id: 'g-frontend', password_hash: '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', created_at: new Date().toISOString() },
+        { id: '6', email: 'user05@test.com', username: 'user05', role: 'user', group_id: 'g-backend', password_hash: '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', created_at: new Date().toISOString() },
+        { id: '7', email: 'user06@test.com', username: 'user06', role: 'user', group_id: 'g-backend', password_hash: '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', created_at: new Date().toISOString() },
+        { id: '8', email: 'user07@test.com', username: 'user07', role: 'user', group_id: 'g-backend', password_hash: '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', created_at: new Date().toISOString() },
+        { id: '9', email: 'user08@test.com', username: 'user08', role: 'user', group_id: 'g-backend', password_hash: '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', created_at: new Date().toISOString() },
+        { id: '10', email: 'user09@test.com', username: 'user09', role: 'user', group_id: null, password_hash: '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', created_at: new Date().toISOString() },
+        { id: '11', email: 'user10@test.com', username: 'user10', role: 'user', group_id: null, password_hash: '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', created_at: new Date().toISOString() },
       ],
       questionSets: [],
       ratingGroups: [],
@@ -186,6 +187,7 @@ export async function createUser(
   const db = getDB();
   if (db.users.find((u) => u.email === email)) return null;
   if (db.users.find((u) => u.username === username)) return null;
+  const hash = bcrypt.hashSync(password, 10);
   const user: User = {
     id: generateId(),
     email,
@@ -194,7 +196,7 @@ export async function createUser(
     group_id: groupId || null,
     created_at: new Date().toISOString(),
   };
-  (user as unknown as Record<string, string>).password_hash = password;
+  (user as unknown as Record<string, string>).password_hash = hash;
   db.users.push(user as User & { password_hash: string });
   return user;
 }
@@ -216,6 +218,7 @@ export async function createUsersBatch(
       errors.push(`跳过 ${username}（邮箱或用户名已存在）`);
       continue;
     }
+    const hash = bcrypt.hashSync(password, 10);
     const user: User = {
       id: generateId(),
       email,
@@ -224,7 +227,7 @@ export async function createUsersBatch(
       group_id: groupId || null,
       created_at: new Date().toISOString(),
     };
-    (user as unknown as Record<string, string>).password_hash = password;
+    (user as unknown as Record<string, string>).password_hash = hash;
     db.users.push(user as User & { password_hash: string });
     created++;
   }
@@ -237,11 +240,11 @@ export async function authenticateUser(
 ): Promise<User | null> {
   const db = getDB();
   const user = db.users.find(
-    (u) =>
-      (u.email === login || u.username === login) &&
-      u.password_hash === password,
+    (u) => u.email === login || u.username === login,
   );
-  return user ?? null;
+  if (!user) return null;
+  if (!bcrypt.compareSync(password, user.password_hash)) return null;
+  return user;
 }
 
 export async function getUserById(id: string): Promise<User | null> {
@@ -300,7 +303,7 @@ export async function updateUserPassword(id: string, newPassword: string): Promi
   const db = getDB();
   const user = db.users.find((u) => u.id === id);
   if (!user) return false;
-  user.password_hash = newPassword;
+  user.password_hash = bcrypt.hashSync(newPassword, 10);
   return true;
 }
 

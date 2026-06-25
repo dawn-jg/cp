@@ -24,22 +24,22 @@ INSERT OR IGNORE INTO groups_t (id, name, description, created_at) VALUES
   ('g-frontend', '前端组', '前端方向技能评测', '${now}'),
   ('g-backend', '后端组', '后端方向技能评测', '${now}');
 
--- Admin user (password: admin123)  ID: 1
+-- Admin user (password: admin123)  ID: 1 - bcrypt hash
 INSERT OR IGNORE INTO users (id, email, username, role, password_hash, created_at) VALUES
-  (1, 'admin@eval.com', 'admin', 'admin', 'admin123', '${now}');
+  (1, 'admin@eval.com', 'admin', 'admin', '$2a$10$FELBju8.rKlM3QINuHZDjuYlJCSrhsJmgfk0wm3pYKkoiXkF4Md6W', '${now}');
 
--- Test users (password: 123456)  IDs: 2~11
+-- Test users (password: 123456)  IDs: 2~11 - bcrypt hash
 INSERT OR IGNORE INTO users (id, email, username, role, group_id, password_hash, created_at) VALUES
-  (2, 'user01@test.com', 'user01', 'user', 'g-frontend', '123456', '${now}'),
-  (3, 'user02@test.com', 'user02', 'user', 'g-frontend', '123456', '${now}'),
-  (4, 'user03@test.com', 'user03', 'user', 'g-frontend', '123456', '${now}'),
-  (5, 'user04@test.com', 'user04', 'user', 'g-frontend', '123456', '${now}'),
-  (6, 'user05@test.com', 'user05', 'user', 'g-backend', '123456', '${now}'),
-  (7, 'user06@test.com', 'user06', 'user', 'g-backend', '123456', '${now}'),
-  (8, 'user07@test.com', 'user07', 'user', 'g-backend', '123456', '${now}'),
-  (9, 'user08@test.com', 'user08', 'user', 'g-backend', '123456', '${now}'),
-  (10, 'user09@test.com', 'user09', 'user', NULL, '123456', '${now}'),
-  (11, 'user10@test.com', 'user10', 'user', NULL, '123456', '${now}');
+  (2, 'user01@test.com', 'user01', 'user', 'g-frontend', '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', '${now}'),
+  (3, 'user02@test.com', 'user02', 'user', 'g-frontend', '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', '${now}'),
+  (4, 'user03@test.com', 'user03', 'user', 'g-frontend', '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', '${now}'),
+  (5, 'user04@test.com', 'user04', 'user', 'g-frontend', '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', '${now}'),
+  (6, 'user05@test.com', 'user05', 'user', 'g-backend', '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', '${now}'),
+  (7, 'user06@test.com', 'user06', 'user', 'g-backend', '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', '${now}'),
+  (8, 'user07@test.com', 'user07', 'user', 'g-backend', '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', '${now}'),
+  (9, 'user08@test.com', 'user08', 'user', 'g-backend', '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', '${now}'),
+  (10, 'user09@test.com', 'user09', 'user', NULL, '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', '${now}'),
+  (11, 'user10@test.com', 'user10', 'user', NULL, '$2a$10$1.h3kno663Bq9V842yvH6eBQ0EPNaqZZlG6fubQfTfYoWqrFmjO2e', '${now}');
 
 -- Questions
 INSERT OR IGNORE INTO questions (id, title, type, options, correct_answer, score, category, group_ids, created_at) VALUES

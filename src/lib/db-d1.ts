@@ -1,6 +1,7 @@
 // D1 数据库适配器 — Cloudflare D1 (SQLite) 实现
 // 函数签名与 db.ts 完全一致，使用 SQL 操作代替内存操作
 
+import bcrypt from 'bcryptjs';
 import type {
   User,
   Question,
@@ -127,12 +128,13 @@ export async function createUser(
 
   const now = new Date().toISOString();
   const finalRole = role || 'user';
+  const hash = bcrypt.hashSync(password, 10);
 
   const result = await db
     .prepare(
       'INSERT INTO users (email, username, role, group_id, password_hash, created_at) VALUES (?, ?, ?, ?, ?, ?)',
     )
-    .bind(email, username, finalRole, groupId || null, password, now)
+    .bind(email, username, finalRole, groupId || null, hash, now)
     .run();
 
   const id = (result.meta?.last_row_id ?? _userIdCounter++).toString();
@@ -173,12 +175,13 @@ export async function createUsersBatch(
     }
 
     const finalRole = role || 'user';
+    const hash = bcrypt.hashSync(password, 10);
 
     const insertResult = await db
       .prepare(
         'INSERT INTO users (email, username, role, group_id, password_hash, created_at) VALUES (?, ?, ?, ?, ?, ?)',
       )
-      .bind(email, username, finalRole, groupId || null, password, now)
+      .bind(email, username, finalRole, groupId || null, hash, now)
       .run();
 
     created++;
@@ -194,9 +197,9 @@ export async function authenticateUser(
   const db = getD1();
   const row = await db
     .prepare(
-      'SELECT id, email, username, role, group_id, password_hash, created_at FROM users WHERE (email = ? OR username = ?) AND password_hash = ?',
+      'SELECT id, email, username, role, group_id, password_hash, created_at FROM users WHERE (email = ? OR username = ?)',
     )
-    .bind(login, login, password)
+    .bind(login, login)
     .first<{
       id: string;
       email: string;
@@ -208,6 +211,9 @@ export async function authenticateUser(
     }>();
 
   if (!row) return null;
+
+  // 用 bcrypt 比较密码
+  if (!bcrypt.compareSync(password, row.password_hash)) return null;
 
   return {
     id: row.id,
@@ -320,9 +326,10 @@ export async function updateUserGroup(id: string, groupId: string | null): Promi
 
 export async function updateUserPassword(id: string, newPassword: string): Promise<boolean> {
   const db = getD1();
+  const hash = bcrypt.hashSync(newPassword, 10);
   const result = await db
     .prepare('UPDATE users SET password_hash = ? WHERE id = ?')
-    .bind(newPassword, id)
+    .bind(hash, id)
     .run();
   return (result.meta?.changes ?? 0) > 0;
 }
